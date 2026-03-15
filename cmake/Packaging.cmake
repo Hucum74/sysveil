@@ -1,0 +1,16 @@
+set(CPACK_PACKAGE_NAME              "SysVeil")
+set(CPACK_PACKAGE_VENDOR            "Your Name")
+set(CPACK_PACKAGE_DESCRIPTION_SHORT "Real-time system resource monitor")
+set(CPACK_PACKAGE_VERSION           "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "SysVeil")
+set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_SOURCE_DIR}/LICENSE")
+
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP")
+elseif(APPLE)
+    set(CPACK_GENERATOR "ZIP")
+else()
+    set(CPACK_GENERATOR "TGZ")
+endif()
+
+include(CPack)
