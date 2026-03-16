@@ -7,12 +7,12 @@ qt_add_qml_module(sysveil
     URI "SysVeil"
     VERSION 1.0
     QML_FILES
-        ../qml/main.qml
-        ../qml/theme/Theme.qml
-        ../qml/components/MetricCard.qml
-        ../qml/components/LiveChart.qml
-        ../qml/components/ProcessTable.qml
-        ../qml/components/Sidebar.qml
+        qml/main.qml
+        qml/theme/Theme.qml
+        qml/components/MetricCard.qml
+        qml/components/LiveChart.qml
+        qml/components/ProcessTable.qml
+        qml/components/Sidebar.qml
 )
 
 # ── Platform-specific sources ─────────────────────────────────────────────────
