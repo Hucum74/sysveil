@@ -83,13 +83,76 @@ ApplicationWindow {
             currentIndex:   sidebar.currentIndex
 
             // Page 0: Overview (placeholder)
-            Rectangle {
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text:  "Overview page — coming in Step 4"
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontSizeMD
+            // Page 0: Overview
+            Item {
+                id: overviewPage
+
+                // Scroll if content overflows
+                Flickable {
+                    anchors.fill: parent
+                    contentHeight: overviewGrid.implicitHeight + Theme.spaceXL
+                    clip: true
+
+                    GridLayout {
+                        id: overviewGrid
+                        anchors.left:   parent.left
+                        anchors.right:  parent.right
+                        anchors.top:    parent.top
+                        columns: Math.max(1, Math.floor(width / 260))
+                        columnSpacing: Theme.spaceMD
+                        rowSpacing:    Theme.spaceMD
+
+                        // CPU card
+                        MetricCard {
+                            Layout.fillWidth: true
+                            label:    "CPU"
+                            unit:     "%"
+                            value:    bridge.cpuOverall
+                            maxValue: 100
+                            subtitle: bridge.cpuCores.length + " cores"
+                        }
+
+                        // RAM card
+                        MetricCard {
+                            Layout.fillWidth: true
+                            label:    "MEMORY"
+                            unit:     "%"
+                            value:    bridge.ramRatio * 100
+                            maxValue: 100
+                            subtitle: (bridge.ramUsed  / (1024*1024*1024)).toFixed(1) +
+                                      " / " +
+                                      (bridge.ramTotal / (1024*1024*1024)).toFixed(1) + " GiB"
+                        }
+
+                        // Disk cards
+                        Repeater {
+                            model: bridge.disks
+                            MetricCard {
+                                Layout.fillWidth: true
+                                label:    "DISK " + modelData.mountPoint.toUpperCase()
+                                unit:     "%"
+                                value:    modelData.usageRatio * 100
+                                maxValue: 100
+                                subtitle: (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) +
+                                          " / " +
+                                          (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
+                            }
+                        }
+
+                        // Network cards
+                        Repeater {
+                            model: bridge.networks
+                            MetricCard {
+                                Layout.fillWidth: true
+                                label:    modelData.name.toUpperCase()
+                                unit:     "KB/s"
+                                value:    modelData.rxBytesPerSec / 1024
+                                maxValue: 1000
+                                subtitle: "rx: " + (modelData.rxBytesPerSec / 1024).toFixed(1) +
+                                          "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
+                            }
+                        }
+                    }
                 }
             }
 
