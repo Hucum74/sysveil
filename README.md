@@ -4,6 +4,10 @@
 
 [![CI](https://github.com/Hucum74/sysveil/actions/workflows/build.yml/badge.svg)](https://github.com/Hucum74/sysveil/actions/workflows/build.yml)
 
+## Screenshots
+![SysVeil Overview](assets/screen1.png)
+![SysVeil CPU](assets/screen2.png)
+
 ## Platform support
 
 | Platform | Status |
