@@ -3,7 +3,10 @@
 #include <QDebug>
 
 MonitorBridge::MonitorBridge(SystemMonitor *monitor, QObject *parent)
-    : QObject(parent) {
+    : QObject(parent), m_cpuHistory(new CpuHistoryModel(60, this)),
+      m_memoryHistory(new MemoryHistoryModel(60, this)),
+      m_diskHistory(new DiskHistoryModel(60, this)),
+      m_networkHistory(new NetworkHistoryModel(60, this)) {
   Q_ASSERT(monitor);
 
   connect(monitor, &SystemMonitor::cpuDataReady, this,
@@ -18,11 +21,16 @@ MonitorBridge::MonitorBridge(SystemMonitor *monitor, QObject *parent)
 
 void MonitorBridge::onCpuData(double overall, QVector<double> perCore) {
   m_cpuOverall = overall;
-
   m_cpuCores.clear();
-  m_cpuCores.reserve(perCore.size());
   for (double v : perCore)
     m_cpuCores.append(v);
+
+  // Feed history model
+  CpuSample s;
+  s.timestamp = QDateTime::currentMSecsSinceEpoch();
+  s.overall = overall;
+  s.cores = perCore;
+  m_cpuHistory->append(s);
 
   emit cpuChanged();
 }
@@ -33,6 +41,14 @@ void MonitorBridge::onMemoryData(qint64 totalPhys, qint64 usedPhys,
   m_ramUsed = usedPhys;
   m_swapTotal = totalSwap;
   m_swapUsed = usedSwap;
+
+  MemorySample s;
+  s.timestamp = QDateTime::currentMSecsSinceEpoch();
+  s.usedBytes = usedPhys;
+  s.totalBytes = totalPhys;
+  s.usedSwap = usedSwap;
+  s.totalSwap = totalSwap;
+  m_memoryHistory->append(s);
 
   emit memoryChanged();
 }
@@ -49,6 +65,18 @@ void MonitorBridge::onDiskData(QVector<DiskStats> disks) {
     entry[QStringLiteral("usageRatio")] =
         d.totalBytes > 0 ? double(d.usedBytes) / double(d.totalBytes) : 0.0;
     m_disks.append(entry);
+
+    // Feed disk history — one model tracks the primary mount point
+    if (d.mountPoint == QStringLiteral("/")) {
+      DiskSample s;
+      s.timestamp = QDateTime::currentMSecsSinceEpoch();
+      s.mountPoint = d.mountPoint;
+      s.usedBytes = d.usedBytes;
+      s.totalBytes = d.totalBytes;
+      s.readBytesPerSec = d.readBytesPerSec;
+      s.writeBytesPerSec = d.writeBytesPerSec;
+      m_diskHistory->append(s);
+    }
   }
 
   emit diskChanged();
@@ -57,7 +85,6 @@ void MonitorBridge::onDiskData(QVector<DiskStats> disks) {
 void MonitorBridge::onNetworkData(QVector<NetworkInterfaceStats> interfaces) {
   m_networks.clear();
   for (const NetworkInterfaceStats &iface : interfaces) {
-    // Filter out virtual interfaces — show only physical ones
     const QString &name = iface.name;
     if (name.startsWith("veth") || name.startsWith("br-") ||
         name.startsWith("docker") || name.startsWith("lo"))
@@ -68,6 +95,14 @@ void MonitorBridge::onNetworkData(QVector<NetworkInterfaceStats> interfaces) {
     entry[QStringLiteral("rxBytesPerSec")] = iface.rxBytesPerSec;
     entry[QStringLiteral("txBytesPerSec")] = iface.txBytesPerSec;
     m_networks.append(entry);
+
+    // Feed network history for the primary interface
+    NetworkSample s;
+    s.timestamp = QDateTime::currentMSecsSinceEpoch();
+    s.interfaceName = iface.name;
+    s.rxBytesPerSec = iface.rxBytesPerSec;
+    s.txBytesPerSec = iface.txBytesPerSec;
+    m_networkHistory->append(s);
   }
 
   emit networkChanged();

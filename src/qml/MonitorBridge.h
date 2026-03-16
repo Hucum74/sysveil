@@ -1,48 +1,42 @@
 #pragma once
 
+#include <QDateTime>
 #include <QObject>
 #include <QVariantList>
 #include <QVariantMap>
 
+#include "CpuHistoryModel.h"
+#include "DiskHistoryModel.h"
+#include "MemoryHistoryModel.h"
+#include "NetworkHistoryModel.h"
 #include "SystemMonitor.h"
-
-// MonitorBridge
-// Sits between SystemMonitor (C++ worker thread) and the QML engine.
-// All properties are updated on the main thread via queued connections.
-// QML binds to properties directly — no polling, no timers in QML.
 
 class MonitorBridge : public QObject {
   Q_OBJECT
 
-  // ── CPU ───────────────────────────────────────────────────────────────
+  // ── Current values ────────────────────────────────────────────────────
   Q_PROPERTY(double cpuOverall READ cpuOverall NOTIFY cpuChanged)
   Q_PROPERTY(QVariantList cpuCores READ cpuCores NOTIFY cpuChanged)
 
-  // ── Memory ────────────────────────────────────────────────────────────
   Q_PROPERTY(qint64 ramUsed READ ramUsed NOTIFY memoryChanged)
   Q_PROPERTY(qint64 ramTotal READ ramTotal NOTIFY memoryChanged)
   Q_PROPERTY(qint64 swapUsed READ swapUsed NOTIFY memoryChanged)
   Q_PROPERTY(qint64 swapTotal READ swapTotal NOTIFY memoryChanged)
-
-  // ── Convenience: 0.0–1.0 ratios for progress bars ────────────────────
   Q_PROPERTY(double ramRatio READ ramRatio NOTIFY memoryChanged)
   Q_PROPERTY(double swapRatio READ swapRatio NOTIFY memoryChanged)
 
-  // ── Disk ──────────────────────────────────────────────────────────────
-  // Each entry is a QVariantMap with keys:
-  //   mountPoint (string), totalBytes (qint64), usedBytes (qint64),
-  //   readBytesPerSec (qint64), writeBytesPerSec (qint64), usageRatio (double)
   Q_PROPERTY(QVariantList disks READ disks NOTIFY diskChanged)
-
-  // ── Network ───────────────────────────────────────────────────────────
-  // Each entry is a QVariantMap with keys:
-  //   name (string), rxBytesPerSec (qint64), txBytesPerSec (qint64)
   Q_PROPERTY(QVariantList networks READ networks NOTIFY networkChanged)
+
+  // ── History models ────────────────────────────────────────────────────
+  Q_PROPERTY(CpuHistoryModel *cpuHistory READ cpuHistory CONSTANT)
+  Q_PROPERTY(MemoryHistoryModel *memoryHistory READ memoryHistory CONSTANT)
+  Q_PROPERTY(DiskHistoryModel *diskHistory READ diskHistory CONSTANT)
+  Q_PROPERTY(NetworkHistoryModel *networkHistory READ networkHistory CONSTANT)
 
 public:
   explicit MonitorBridge(SystemMonitor *monitor, QObject *parent = nullptr);
 
-  // Property accessors
   double cpuOverall() const { return m_cpuOverall; }
   QVariantList cpuCores() const { return m_cpuCores; }
 
@@ -50,7 +44,6 @@ public:
   qint64 ramTotal() const { return m_ramTotal; }
   qint64 swapUsed() const { return m_swapUsed; }
   qint64 swapTotal() const { return m_swapTotal; }
-
   double ramRatio() const {
     return m_ramTotal > 0 ? double(m_ramUsed) / double(m_ramTotal) : 0.0;
   }
@@ -60,6 +53,11 @@ public:
 
   QVariantList disks() const { return m_disks; }
   QVariantList networks() const { return m_networks; }
+
+  CpuHistoryModel *cpuHistory() { return m_cpuHistory; }
+  MemoryHistoryModel *memoryHistory() { return m_memoryHistory; }
+  DiskHistoryModel *diskHistory() { return m_diskHistory; }
+  NetworkHistoryModel *networkHistory() { return m_networkHistory; }
 
 signals:
   void cpuChanged();
@@ -75,7 +73,6 @@ private slots:
   void onNetworkData(QVector<NetworkInterfaceStats> interfaces);
 
 private:
-  // ── Cached values ─────────────────────────────────────────────────────
   double m_cpuOverall{0.0};
   QVariantList m_cpuCores;
 
@@ -86,4 +83,9 @@ private:
 
   QVariantList m_disks;
   QVariantList m_networks;
+
+  CpuHistoryModel *m_cpuHistory{nullptr};
+  MemoryHistoryModel *m_memoryHistory{nullptr};
+  DiskHistoryModel *m_diskHistory{nullptr};
+  NetworkHistoryModel *m_networkHistory{nullptr};
 };
