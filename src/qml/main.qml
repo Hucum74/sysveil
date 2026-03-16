@@ -16,26 +16,25 @@ ApplicationWindow {
 
     Rectangle {
         anchors.fill: parent
-        color: "#1a1a2e"
+        color: Theme.bgBase
 
         Column {
             anchors.centerIn: parent
-            spacing: 16
+            spacing: Theme.spaceMD
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:  "SysVeil"
-                font.pixelSize: 48
+                font.pixelSize: Theme.fontSizeXXL
                 font.weight:    Font.Light
-                color:          "#4ecdc4"
+                color:          Theme.accent
             }
 
-            // ── Current values ────────────────────────────────────────────
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:  "CPU: " + bridge.cpuOverall.toFixed(1) + "%"
-                font.pixelSize: 20
-                color: "#ffffff"
+                font.pixelSize: Theme.fontSizeLG
+                color: Theme.metricColor(bridge.cpuOverall / 100)
             }
 
             Text {
@@ -44,8 +43,8 @@ ApplicationWindow {
                       (bridge.ramUsed  / (1024 * 1024)).toFixed(0) + " MiB / " +
                       (bridge.ramTotal / (1024 * 1024)).toFixed(0) + " MiB" +
                       "  (" + (bridge.ramRatio * 100).toFixed(1) + "%)"
-                font.pixelSize: 20
-                color: "#ffffff"
+                font.pixelSize: Theme.fontSizeLG
+                color: Theme.metricColor(bridge.ramRatio)
             }
 
             Repeater {
@@ -56,8 +55,8 @@ ApplicationWindow {
                           (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) +
                           " / " +
                           (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
-                    font.pixelSize: 16
-                    color: "#aaaaaa"
+                    font.pixelSize: Theme.fontSizeMD
+                    color: Theme.metricColor(modelData.usageRatio)
                 }
             }
 
@@ -68,46 +67,23 @@ ApplicationWindow {
                     text: modelData.name +
                           "  rx: " + (modelData.rxBytesPerSec / 1024).toFixed(1) + " KiB/s" +
                           "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
-                    font.pixelSize: 16
-                    color: "#aaaaaa"
+                    font.pixelSize: Theme.fontSizeMD
+                    color: Theme.textSecondary
                 }
             }
 
-            // ── History buffer smoke test ──────────────────────────────────
-            Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: 420
-                height: 1
-                color: "#333"
-            }
-
+            // History buffer counter
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "History buffers (samples accumulated):"
-                font.pixelSize: 13
-                color: "#666"
-            }
-
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "CPU: "     + cpuHistory.rowCount()     +
-                      "  RAM: "   + memoryHistory.rowCount()  +
-                      "  Disk: "  + diskHistory.rowCount()    +
-                      "  Net: "   + networkHistory.rowCount()
-                font.pixelSize: 13
-                color: "#4ecdc4"
-
-                // Refresh the count display every second
-                // (models emit signals but Text needs an explicit binding trigger)
+                font.pixelSize: Theme.fontSizeSM
+                color: Theme.textMuted
                 Timer {
-                    interval: 1000
-                    running:  true
-                    repeat:   true
+                    interval: 1000; running: true; repeat: true
                     onTriggered: parent.text =
-                        "CPU: "    + cpuHistory.rowCount()    +
-                        "  RAM: "  + memoryHistory.rowCount() +
-                        "  Disk: " + diskHistory.rowCount()   +
-                        "  Net: "  + networkHistory.rowCount()
+                        "buffers — cpu: " + cpuHistory.rowCount()   +
+                        "  ram: "  + memoryHistory.rowCount() +
+                        "  disk: " + diskHistory.rowCount()   +
+                        "  net: "  + networkHistory.rowCount()
                 }
             }
         }

@@ -21,6 +21,12 @@ qt_add_qml_module(sysveil
         qml/components/Sidebar.qml
 )
 
+qt_target_qml_sources(sysveil
+    QML_FILES
+        qml/theme/Theme.qml
+    PREFIX /SysVeil
+)
+
 # ── Platform-specific sources ─────────────────────────────────────────────────
 if(WIN32)
     target_sources(sysveil PRIVATE
