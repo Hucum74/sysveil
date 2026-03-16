@@ -222,47 +222,193 @@ ApplicationWindow {
                     }
                 }
             }
-            // Page 1: CPU (placeholder)
-            Rectangle {
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text:  "CPU detail page — coming in Step 6"
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontSizeMD
+            // Page 1: CPU detail
+            Item {
+                Flickable {
+                    anchors.fill:  parent
+                    contentHeight: cpuDetailCol.implicitHeight + Theme.spaceXXL
+                    clip:          true
+                    ScrollBar.vertical: ScrollBar {}
+                    Column {
+                        id: cpuDetailCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: Theme.spaceLG
+
+                        MetricCard {
+                            width: parent.width
+                            label:    "CPU OVERALL"
+                            unit:     "%"
+                            value:    bridge.cpuOverall
+                            maxValue: 100
+                            subtitle: bridge.cpuCores.length + " logical cores"
+                        }
+
+                        Text {
+                            text: "PER CORE"
+                            font.pixelSize: Theme.fontSizeXS
+                            font.letterSpacing: 1.5
+                            font.weight: Font.Medium
+                            color: Theme.textMuted
+                        }
+
+                        GridLayout {
+                            width: parent.width
+                            columns: Math.max(1, Math.floor(width / 200))
+                            columnSpacing: Theme.spaceMD
+                            rowSpacing: Theme.spaceMD
+                            Repeater {
+                                model: bridge.cpuCores.length
+                                MetricCard {
+                                    Layout.fillWidth: true
+                                    label:    "CORE " + index
+                                    unit:     "%"
+                                    value:    bridge.cpuCores[index] !== undefined ? bridge.cpuCores[index] : 0
+                                    maxValue: 100
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            // Page 2: Memory (placeholder)
-            Rectangle {
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text:  "Memory detail page — coming in Step 6"
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontSizeMD
+            // Page 2: Memory detail
+            Item {
+                Flickable {
+                    anchors.fill:  parent
+                    contentHeight: memDetailCol.implicitHeight + Theme.spaceXXL
+                    clip:          true
+                    ScrollBar.vertical: ScrollBar {}
+                    Column {
+                        id: memDetailCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: Theme.spaceLG
+
+                        MetricCard {
+                            width: parent.width
+                            label:    "RAM USAGE"
+                            unit:     "%"
+                            value:    bridge.ramRatio * 100
+                            maxValue: 100
+                            subtitle: (bridge.ramUsed / (1024*1024*1024)).toFixed(2) +
+                                      " / " +
+                                      (bridge.ramTotal / (1024*1024*1024)).toFixed(1) + " GiB"
+                            details: [
+                                { label: "Used",      value: (bridge.ramUsed  / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                { label: "Available", value: ((bridge.ramTotal - bridge.ramUsed) / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                { label: "Total",     value: (bridge.ramTotal / (1024*1024*1024)).toFixed(1) + " GiB" }
+                            ]
+                        }
+
+                        MetricCard {
+                            width: parent.width
+                            label:    "SWAP"
+                            unit:     "%"
+                            value:    bridge.swapRatio * 100
+                            maxValue: 100
+                            subtitle: (bridge.swapUsed / (1024*1024*1024)).toFixed(2) +
+                                      " / " +
+                                      (bridge.swapTotal / (1024*1024*1024)).toFixed(1) + " GiB"
+                            details: [
+                                { label: "Used",  value: (bridge.swapUsed  / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                { label: "Free",  value: ((bridge.swapTotal - bridge.swapUsed) / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                { label: "Total", value: (bridge.swapTotal / (1024*1024*1024)).toFixed(1) + " GiB" }
+                            ]
+                        }
+                    }
                 }
             }
 
-            // Page 3: Disk (placeholder)
-            Rectangle {
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text:  "Disk detail page — coming in Step 6"
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontSizeMD
+            // Page 3: Disk detail
+            Item {
+                Flickable {
+                    anchors.fill:  parent
+                    contentHeight: diskDetailCol.implicitHeight + Theme.spaceXXL
+                    clip:          true
+                    ScrollBar.vertical: ScrollBar {}
+                    Column {
+                        id: diskDetailCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: Theme.spaceLG
+
+                        Text {
+                            text: "MOUNTED VOLUMES"
+                            font.pixelSize: Theme.fontSizeXS
+                            font.letterSpacing: 1.5
+                            font.weight: Font.Medium
+                            color: Theme.textMuted
+                        }
+
+                        Repeater {
+                            model: bridge.disks
+                            MetricCard {
+                                width: parent.width
+                                label:    "DISK " + modelData.mountPoint.toUpperCase()
+                                unit:     "%"
+                                value:    modelData.usageRatio * 100
+                                maxValue: 100
+                                subtitle: (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) +
+                                          " / " +
+                                          (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
+                                details: [
+                                    { label: "Used",    value: (modelData.usedBytes  / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                    { label: "Free",    value: ((modelData.totalBytes - modelData.usedBytes) / (1024*1024*1024)).toFixed(2) + " GiB" },
+                                    { label: "Total",   value: (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB" },
+                                    { label: "Read",    value: (modelData.readBytesPerSec  / 1024).toFixed(1) + " KiB/s" },
+                                    { label: "Write",   value: (modelData.writeBytesPerSec / 1024).toFixed(1) + " KiB/s" }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
 
-            // Page 4: Network (placeholder)
-            Rectangle {
-                color: "transparent"
-                Text {
-                    anchors.centerIn: parent
-                    text:  "Network detail page — coming in Step 6"
-                    color: Theme.textMuted
-                    font.pixelSize: Theme.fontSizeMD
+            // Page 4: Network detail
+            Item {
+                Flickable {
+                    anchors.fill:  parent
+                    contentHeight: netDetailCol.implicitHeight + Theme.spaceXXL
+                    clip:          true
+                    ScrollBar.vertical: ScrollBar {}
+                    Column {
+                        id: netDetailCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: Theme.spaceLG
+
+                        Text {
+                            text: "INTERFACES"
+                            font.pixelSize: Theme.fontSizeXS
+                            font.letterSpacing: 1.5
+                            font.weight: Font.Medium
+                            color: Theme.textMuted
+                        }
+
+                        Repeater {
+                            model: bridge.networks
+                            MetricCard {
+                                width: parent.width
+                                label:    modelData.name.toUpperCase()
+                                unit:     "KiB/s"
+                                value:    modelData.rxBytesPerSec / 1024
+                                maxValue: 10240
+                                subtitle: "rx: " + (modelData.rxBytesPerSec / 1024).toFixed(1) +
+                                          "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
+                                details: [
+                                    { label: "Download", value: (modelData.rxBytesPerSec / 1024).toFixed(1) + " KiB/s" },
+                                    { label: "Upload",   value: (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s" },
+                                    { label: "Total rx", value: "—" },
+                                    { label: "Total tx", value: "—" }
+                                ]
+                            }
+                        }
+                    }
                 }
             }
         }
