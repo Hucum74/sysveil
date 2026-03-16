@@ -62,8 +62,8 @@ QML UI  (binds directly, animates on change)
 ## Roadmap
 
 - [x] Phase 1 — CMake scaffold, CI, Qt Quick skeleton
-- [ ] Phase 2 — CPU, memory, disk, network data providers
-- [ ] Phase 3 — QML bridge and data models
-- [ ] Phase 4 — Core UI with live charts
+- [x] Phase 2 — CPU, memory, disk, network data providers
+- [x] Phase 3 — QML bridge and data models
+- [x] Phase 4 — Core UI with live charts (live charts stubbed)
 - [ ] Phase 5 — Process table
 - [ ] Phase 6 — Packaging (NSIS / DMG / AppImage)
