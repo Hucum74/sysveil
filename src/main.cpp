@@ -2,96 +2,61 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
-#include <QTimer>
 
-#include "CpuProvider.h"
-#include "DiskProvider.h"
-#include "MemoryProvider.h"
-#include "NetworkProvider.h"
+#include "SystemMonitor.h"
 
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
 
   app.setApplicationName("SysVeil");
   app.setApplicationVersion("0.1.0");
-  app.setOrganizationName("Talha");
-  app.setOrganizationDomain("com.talha.sysveil");
+  app.setOrganizationName("YourName");
+  app.setOrganizationDomain("com.yourname.sysveil");
 
   QQuickStyle::setStyle("Material");
 
-  // -- CPU verification --
-  CpuProvider cpu;
-  cpu.initialize();
+  // ── SystemMonitor ─────────────────────────────────────────────────────
+  SystemMonitor monitor;
 
-  QObject::connect(&cpu, &CpuProvider::cpuDataReady,
+  QObject::connect(&monitor, &SystemMonitor::cpuDataReady,
                    [](double overall, QVector<double> perCore) {
-                     qDebug() << "CPU overall:"
-                              << QString::number(overall, 'f', 1) + "%";
-                     for (int i = 0; i < perCore.size(); ++i)
-                       qDebug() << "  Core" << i
-                                << QString::number(perCore[i], 'f', 1) + "%";
+                     qDebug()
+                         << "CPU:" << QString::number(overall, 'f', 1) + "%";
                    });
 
-  // ── Memory ────────────────────────────────────────────────────────────
-  MemoryProvider mem;
-  mem.initialize();
-
   QObject::connect(
-      &mem, &MemoryProvider::memoryDataReady,
+      &monitor, &SystemMonitor::memoryDataReady,
       [](qint64 totalPhys, qint64 usedPhys, qint64 totalSwap, qint64 usedSwap) {
-        auto toMiB = [](qint64 bytes) {
-          return QString::number(bytes / (1024.0 * 1024.0), 'f', 1) + " MiB";
+        auto toMiB = [](qint64 b) {
+          return QString::number(b / (1024.0 * 1024.0), 'f', 1) + " MiB";
         };
-        qDebug() << "RAM :" << toMiB(usedPhys) << "/" << toMiB(totalPhys);
-        qDebug() << "Swap:" << toMiB(usedSwap) << "/" << toMiB(totalSwap);
+        qDebug() << "RAM:" << toMiB(usedPhys) << "/" << toMiB(totalPhys);
       });
-
-  // ── Disk ──────────────────────────────────────────────────────────────
-  DiskProvider disk;
-  disk.initialize();
 
   QObject::connect(
-      &disk, &DiskProvider::diskDataReady, [](QVector<DiskStats> disks) {
-        auto toMiB = [](qint64 bytes) {
-          return QString::number(bytes / (1024.0 * 1024.0), 'f', 1) + " MiB";
-        };
-        auto toKiB = [](qint64 bytes) {
-          return QString::number(bytes / 1024.0, 'f', 1) + " KiB/s";
-        };
-        for (const auto &d : disks) {
+      &monitor, &SystemMonitor::diskDataReady, [](QVector<DiskStats> disks) {
+        for (const auto &d : disks)
           qDebug() << "Disk" << d.mountPoint
-                   << "used:" << toMiB(d.usedBytes) + "/" + toMiB(d.totalBytes)
-                   << "R:" << toKiB(d.readBytesPerSec)
-                   << "W:" << toKiB(d.writeBytesPerSec);
-        }
+                   << QString::number(d.usedBytes / (1024.0 * 1024.0), 'f', 0) +
+                          "/" +
+                          QString::number(d.totalBytes / (1024.0 * 1024.0), 'f',
+                                          0) +
+                          " MiB";
       });
 
-  // ── Network ───────────────────────────────────────────────────────────
-  NetworkProvider net;
-  net.initialize();
-
-  QObject::connect(&net, &NetworkProvider::networkDataReady,
+  QObject::connect(&monitor, &SystemMonitor::networkDataReady,
                    [](QVector<NetworkInterfaceStats> ifaces) {
-                     auto toKiB = [](qint64 bytes) {
-                       return QString::number(bytes / 1024.0, 'f', 1) +
-                              " KiB/s";
-                     };
-                     for (const auto &iface : ifaces) {
-                       qDebug() << "Net" << iface.name
-                                << "rx:" << toKiB(iface.rxBytesPerSec)
-                                << "tx:" << toKiB(iface.txBytesPerSec);
+                     for (const auto &i : ifaces) {
+                       if (i.rxBytesPerSec > 0 || i.txBytesPerSec > 0)
+                         qDebug() << "Net" << i.name
+                                  << "rx:" << i.rxBytesPerSec / 1024 << "KiB/s"
+                                  << "tx:" << i.txBytesPerSec / 1024 << "KiB/s";
                      }
                    });
 
-  // ── Poll timer (shared) ───────────────────────────────────────────────
-  QTimer pollTimer;
-  QObject::connect(&pollTimer, &QTimer::timeout, &cpu, &CpuProvider::poll);
-  QObject::connect(&pollTimer, &QTimer::timeout, &mem, &MemoryProvider::poll);
-  QObject::connect(&pollTimer, &QTimer::timeout, &disk, &DiskProvider::poll);
-  QObject::connect(&pollTimer, &QTimer::timeout, &net, &NetworkProvider::poll);
-  pollTimer.start(1000);
+  monitor.start(1000);
 
-  // ── QML window ──
+  // ── QML window ────────────────────────────────────────────────────────
   QQmlApplicationEngine engine;
 
   using namespace Qt::StringLiterals;
