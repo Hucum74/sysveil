@@ -30,7 +30,7 @@ ApplicationWindow {
                 color:          "#4ecdc4"
             }
 
-            // ── CPU ───────────────────────────────────────────────────────
+            // ── Current values ────────────────────────────────────────────
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text:  "CPU: " + bridge.cpuOverall.toFixed(1) + "%"
@@ -38,7 +38,6 @@ ApplicationWindow {
                 color: "#ffffff"
             }
 
-            // ── Memory ────────────────────────────────────────────────────
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "RAM: " +
@@ -49,20 +48,19 @@ ApplicationWindow {
                 color: "#ffffff"
             }
 
-            // ── Disk ──────────────────────────────────────────────────────
             Repeater {
                 model: bridge.disks
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Disk " + modelData.mountPoint + ": " +
-                          (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) + " / " +
+                          (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) +
+                          " / " +
                           (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
                     font.pixelSize: 16
                     color: "#aaaaaa"
                 }
             }
 
-            // ── Network ───────────────────────────────────────────────────
             Repeater {
                 model: bridge.networks
                 Text {
@@ -72,6 +70,44 @@ ApplicationWindow {
                           "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
                     font.pixelSize: 16
                     color: "#aaaaaa"
+                }
+            }
+
+            // ── History buffer smoke test ──────────────────────────────────
+            Rectangle {
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 420
+                height: 1
+                color: "#333"
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "History buffers (samples accumulated):"
+                font.pixelSize: 13
+                color: "#666"
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "CPU: "     + cpuHistory.rowCount()     +
+                      "  RAM: "   + memoryHistory.rowCount()  +
+                      "  Disk: "  + diskHistory.rowCount()    +
+                      "  Net: "   + networkHistory.rowCount()
+                font.pixelSize: 13
+                color: "#4ecdc4"
+
+                // Refresh the count display every second
+                // (models emit signals but Text needs an explicit binding trigger)
+                Timer {
+                    interval: 1000
+                    running:  true
+                    repeat:   true
+                    onTriggered: parent.text =
+                        "CPU: "    + cpuHistory.rowCount()    +
+                        "  RAM: "  + memoryHistory.rowCount() +
+                        "  Disk: " + diskHistory.rowCount()   +
+                        "  Net: "  + networkHistory.rowCount()
                 }
             }
         }

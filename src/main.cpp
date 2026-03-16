@@ -26,8 +26,16 @@ int main(int argc, char *argv[]) {
   // ── QML engine ────────────────────────────────────────────────────────
   QQmlApplicationEngine engine;
 
-  // Expose bridge to QML as a context property named "bridge"
-  engine.rootContext()->setContextProperty("bridge", &bridge);
+  QQmlContext *ctx = engine.rootContext();
+
+  // Current values bridge
+  ctx->setContextProperty("bridge", &bridge);
+
+  // History models — exposed individually so QML charts can bind directly
+  ctx->setContextProperty("cpuHistory", bridge.cpuHistory());
+  ctx->setContextProperty("memoryHistory", bridge.memoryHistory());
+  ctx->setContextProperty("diskHistory", bridge.diskHistory());
+  ctx->setContextProperty("networkHistory", bridge.networkHistory());
 
   using namespace Qt::StringLiterals;
   const QUrl url(u"qrc:/SysVeil/qml/main.qml"_s);
