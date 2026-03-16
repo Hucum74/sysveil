@@ -1,5 +1,8 @@
 import QtQuick
 import QtQuick.Controls.Material
+import QtQuick.Controls
+import QtQuick.Layouts
+import "components"
 
 ApplicationWindow {
     id: root
@@ -14,76 +17,123 @@ ApplicationWindow {
     Material.theme:  Material.Dark
     Material.accent: Material.Teal
 
+    // ── Root background ───────────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
         color: Theme.bgBase
+    }
 
-        Column {
-            anchors.centerIn: parent
-            spacing: Theme.spaceMD
+    // ── Sidebar ───────────────────────────────────────────────────────
+    Sidebar {
+        id: sidebar
+        anchors.left:   parent.left
+        anchors.top:    parent.top
+        anchors.bottom: parent.bottom
+        width: Theme.sidebarWidth
 
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text:  "SysVeil"
-                font.pixelSize: Theme.fontSizeXXL
-                font.weight:    Font.Light
-                color:          Theme.accent
+        onItemSelected: function(index) {
+            stack.currentIndex = index
+        }
+    }
+
+    // ── Content area ──────────────────────────────────────────────────
+    Item {
+        anchors.left:   sidebar.right
+        anchors.right:  parent.right
+        anchors.top:    parent.top
+        anchors.bottom: parent.bottom
+
+        // Page header
+        Rectangle {
+            id: header
+            anchors.left:  parent.left
+            anchors.right: parent.right
+            anchors.top:   parent.top
+            height: 56
+            color:  Theme.bgSurface
+
+            // Bottom border
+            Rectangle {
+                anchors.left:   parent.left
+                anchors.right:  parent.right
+                anchors.bottom: parent.bottom
+                height: 1
+                color:  Theme.borderSubtle
             }
 
             Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text:  "CPU: " + bridge.cpuOverall.toFixed(1) + "%"
+                anchors.left:           parent.left
+                anchors.leftMargin:     Theme.spaceLG
+                anchors.verticalCenter: parent.verticalCenter
+                text: ["Overview", "CPU", "Memory", "Disk", "Network"][sidebar.currentIndex]
                 font.pixelSize: Theme.fontSizeLG
-                color: Theme.metricColor(bridge.cpuOverall / 100)
+                font.weight:    Font.Medium
+                color:          Theme.textPrimary
             }
+        }
 
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: "RAM: " +
-                      (bridge.ramUsed  / (1024 * 1024)).toFixed(0) + " MiB / " +
-                      (bridge.ramTotal / (1024 * 1024)).toFixed(0) + " MiB" +
-                      "  (" + (bridge.ramRatio * 100).toFixed(1) + "%)"
-                font.pixelSize: Theme.fontSizeLG
-                color: Theme.metricColor(bridge.ramRatio)
-            }
+        // Page stack
+        StackLayout {
+            id: stack
+            anchors.left:   parent.left
+            anchors.right:  parent.right
+            anchors.top:    header.bottom
+            anchors.bottom: parent.bottom
+            anchors.margins: Theme.spaceLG
+            currentIndex:   sidebar.currentIndex
 
-            Repeater {
-                model: bridge.disks
+            // Page 0: Overview (placeholder)
+            Rectangle {
+                color: "transparent"
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: "Disk " + modelData.mountPoint + ": " +
-                          (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) +
-                          " / " +
-                          (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
+                    anchors.centerIn: parent
+                    text:  "Overview page — coming in Step 4"
+                    color: Theme.textMuted
                     font.pixelSize: Theme.fontSizeMD
-                    color: Theme.metricColor(modelData.usageRatio)
                 }
             }
 
-            Repeater {
-                model: bridge.networks
+            // Page 1: CPU (placeholder)
+            Rectangle {
+                color: "transparent"
                 Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: modelData.name +
-                          "  rx: " + (modelData.rxBytesPerSec / 1024).toFixed(1) + " KiB/s" +
-                          "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
+                    anchors.centerIn: parent
+                    text:  "CPU detail page — coming in Step 6"
+                    color: Theme.textMuted
                     font.pixelSize: Theme.fontSizeMD
-                    color: Theme.textSecondary
                 }
             }
 
-            // History buffer counter
-            Text {
-                anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: Theme.fontSizeSM
-                color: Theme.textMuted
-                Timer {
-                    interval: 1000; running: true; repeat: true
-                    onTriggered: parent.text =
-                        "buffers — cpu: " + cpuHistory.rowCount()   +
-                        "  ram: "  + memoryHistory.rowCount() +
-                        "  disk: " + diskHistory.rowCount()   +
-                        "  net: "  + networkHistory.rowCount()
+            // Page 2: Memory (placeholder)
+            Rectangle {
+                color: "transparent"
+                Text {
+                    anchors.centerIn: parent
+                    text:  "Memory detail page — coming in Step 6"
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontSizeMD
+                }
+            }
+
+            // Page 3: Disk (placeholder)
+            Rectangle {
+                color: "transparent"
+                Text {
+                    anchors.centerIn: parent
+                    text:  "Disk detail page — coming in Step 6"
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontSizeMD
+                }
+            }
+
+            // Page 4: Network (placeholder)
+            Rectangle {
+                color: "transparent"
+                Text {
+                    anchors.centerIn: parent
+                    text:  "Network detail page — coming in Step 6"
+                    color: Theme.textMuted
+                    font.pixelSize: Theme.fontSizeMD
                 }
             }
         }
