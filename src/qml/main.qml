@@ -20,7 +20,7 @@ ApplicationWindow {
 
         Column {
             anchors.centerIn: parent
-            spacing: 12
+            spacing: 16
 
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -30,11 +30,49 @@ ApplicationWindow {
                 color:          "#4ecdc4"
             }
 
+            // ── CPU ───────────────────────────────────────────────────────
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text:  "Phase 1 scaffold — window alive ✓"
-                font.pixelSize: 16
-                color:          "#888"
+                text:  "CPU: " + bridge.cpuOverall.toFixed(1) + "%"
+                font.pixelSize: 20
+                color: "#ffffff"
+            }
+
+            // ── Memory ────────────────────────────────────────────────────
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "RAM: " +
+                      (bridge.ramUsed  / (1024 * 1024)).toFixed(0) + " MiB / " +
+                      (bridge.ramTotal / (1024 * 1024)).toFixed(0) + " MiB" +
+                      "  (" + (bridge.ramRatio * 100).toFixed(1) + "%)"
+                font.pixelSize: 20
+                color: "#ffffff"
+            }
+
+            // ── Disk ──────────────────────────────────────────────────────
+            Repeater {
+                model: bridge.disks
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: "Disk " + modelData.mountPoint + ": " +
+                          (modelData.usedBytes  / (1024*1024*1024)).toFixed(1) + " / " +
+                          (modelData.totalBytes / (1024*1024*1024)).toFixed(1) + " GiB"
+                    font.pixelSize: 16
+                    color: "#aaaaaa"
+                }
+            }
+
+            // ── Network ───────────────────────────────────────────────────
+            Repeater {
+                model: bridge.networks
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: modelData.name +
+                          "  rx: " + (modelData.rxBytesPerSec / 1024).toFixed(1) + " KiB/s" +
+                          "  tx: " + (modelData.txBytesPerSec / 1024).toFixed(1) + " KiB/s"
+                    font.pixelSize: 16
+                    color: "#aaaaaa"
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 qt_add_executable(sysveil
     core/SystemMonitor.cpp
+    qml/MonitorBridge.cpp
     main.cpp
 )
 

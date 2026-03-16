@@ -38,6 +38,7 @@ signals:
   void networkDataReady(QVector<NetworkInterfaceStats> interfaces);
 
 private:
+  int m_intervalMs{1000};
   QThread *m_thread{nullptr};
   QTimer *m_timer{nullptr};
 
