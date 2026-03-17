@@ -43,7 +43,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          windeployqt --qmldir src/qml build/src/Release/sysveil.exe
+          $exe = Get-ChildItem -Recurse -Filter "sysveil.exe" build | Select-Object -First 1 -ExpandProperty FullName
+          Write-Host "Found binary: $exe"
+          windeployqt --qmldir src/qml "$exe"
 
       - name: Deploy Qt (macOS)
         if: runner.os == 'macOS'
