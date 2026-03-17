@@ -1,5 +1,6 @@
 qt_add_executable(sysveil
     core/SystemMonitor.cpp
+    core/ProcessProvider.h
     qml/MonitorBridge.cpp
     qml/CpuHistoryModel.cpp
     qml/MemoryHistoryModel.cpp
@@ -34,6 +35,7 @@ if(WIN32)
         platform/windows/MemoryProvider.cpp
         platform/windows/DiskProvider.cpp
         platform/windows/NetworkProvider.cpp
+        platform/windows/ProcessProvider.cpp
     )
 elseif(APPLE)
     target_sources(sysveil PRIVATE
@@ -45,6 +47,7 @@ elseif(APPLE)
         platform/macos/MemoryProvider.cpp
         platform/macos/DiskProvider.cpp
         platform/macos/NetworkProvider.cpp
+        platform/macos/ProcessProvider.cpp
     )
 else()
     target_sources(sysveil PRIVATE
@@ -56,6 +59,7 @@ else()
         platform/linux/MemoryProvider.cpp
         platform/linux/DiskProvider.cpp
         platform/linux/NetworkProvider.cpp
+        platform/linux/ProcessProvider.cpp
     )
 endif()
 
