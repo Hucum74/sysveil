@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Release ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: "6.7.0"
+          modules: "qtcharts"
+          cache: true
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libgl1-mesa-dev libxcb-cursor0
+
+      - name: Install NSIS (Windows)
+        if: runner.os == 'Windows'
+        run: choco install nsis --no-progress -y
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Deploy Qt (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Recurse -Filter "sysveil.exe" build | Select-Object -First 1 -ExpandProperty FullName
+          Write-Host "Found binary: $exe"
+          windeployqt --qmldir src/qml "$exe"
+
+      - name: Deploy Qt (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          macdeployqt build/src/sysveil.app -qmldir=src/qml
+
+      - name: Package
+        run: cmake --build build --config Release --target package
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/sysveil-*.tar.gz
+            build/sysveil-*.exe
+            build/sysveil-*.dmg
+            build/sysveil-*.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
