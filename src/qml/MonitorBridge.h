@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QObject>
+#include <QTimer>
 #include <QVariantList>
 #include <QVariantMap>
 
@@ -63,6 +64,9 @@ public:
   NetworkHistoryModel *networkHistory() { return m_networkHistory; }
   ProcessProxyModel *processModel() { return m_processProxy; }
 
+  Q_INVOKABLE bool killProcess(int pid, bool graceful = true);
+  Q_INVOKABLE void forceKillProcess(int pid);
+
 signals:
   void cpuChanged();
   void memoryChanged();
@@ -95,4 +99,9 @@ private:
   NetworkHistoryModel *m_networkHistory{nullptr};
   ProcessModel *m_processModel{nullptr};
   ProcessProxyModel *m_processProxy{nullptr};
+
+  QTimer *m_killTimer{nullptr};
+  int m_killPid{-1};
+
+  SystemMonitor *m_monitor{nullptr};
 };

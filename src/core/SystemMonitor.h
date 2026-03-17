@@ -22,6 +22,8 @@ public:
   void start(int intervalMs = 1000);
   void stop();
 
+  bool killProcess(int pid, bool graceful = true);
+
 signals:
   void cpuDataReady(double overallUsage, QVector<double> perCoreUsage);
   void memoryDataReady(qint64 totalPhysical, qint64 usedPhysical,

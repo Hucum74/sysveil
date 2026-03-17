@@ -22,6 +22,7 @@ qt_add_qml_module(sysveil
         qml/components/ProcessTable.qml
         qml/components/Sidebar.qml
         qml/components/NavItem.qml
+        qml/components/HeaderCell.qml
 )
 
 

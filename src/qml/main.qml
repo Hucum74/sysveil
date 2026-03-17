@@ -65,7 +65,7 @@ ApplicationWindow {
                 anchors.left:           parent.left
                 anchors.leftMargin:     Theme.spaceLG
                 anchors.verticalCenter: parent.verticalCenter
-                text: ["Overview", "CPU", "Memory", "Disk", "Network"][sidebar.currentIndex]
+                text: ["Overview", "CPU", "Memory", "Disk", "Network", "Processes"][sidebar.currentIndex]
                 font.pixelSize: Theme.fontSizeLG
                 font.weight:    Font.Medium
                 color:          Theme.textPrimary
@@ -409,6 +409,14 @@ ApplicationWindow {
                             }
                         }
                     }
+                }
+            }
+
+            // Page 5: Processes
+            Item {
+                ProcessTable {
+                    anchors.fill:    parent
+                    anchors.margins: Theme.spaceSM
                 }
             }
         }

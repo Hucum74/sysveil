@@ -85,3 +85,9 @@ void SystemMonitor::stop() {
   m_thread->wait();
   qDebug() << "SystemMonitor: stopped";
 }
+
+bool SystemMonitor::killProcess(int pid, bool graceful) {
+  if (!m_process)
+    return false;
+  return m_process->killProcess(pid, graceful);
+}

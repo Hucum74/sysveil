@@ -17,6 +17,7 @@ Item {
         ListElement { label: "Memory";    icon: "▦" }
         ListElement { label: "Disk";      icon: "◫" }
         ListElement { label: "Network";   icon: "⇅" }
+        ListElement { label: "Processes"; icon: "☰" }
     }
 
     Component.onCompleted: repeater.model = navModel

@@ -11,6 +11,8 @@ MonitorBridge::MonitorBridge(SystemMonitor *monitor, QObject *parent)
       m_processProxy(new ProcessProxyModel(this)) {
   Q_ASSERT(monitor);
 
+  m_monitor = monitor;
+
   connect(monitor, &SystemMonitor::cpuDataReady, this,
           &MonitorBridge::onCpuData);
   connect(monitor, &SystemMonitor::memoryDataReady, this,
@@ -118,4 +120,41 @@ void MonitorBridge::onNetworkData(QVector<NetworkInterfaceStats> interfaces) {
 
 void MonitorBridge::onProcessData(QVector<ProcessInfo> processes) {
   m_processModel->update(std::move(processes));
+}
+
+bool MonitorBridge::killProcess(int pid, bool graceful) {
+  if (!m_monitor)
+    return false;
+
+  if (graceful) {
+    // Send SIGTERM, then start a 5-second timer to SIGKILL if still alive
+    bool ok = m_monitor->killProcess(pid, true);
+    if (ok) {
+      m_killPid = pid;
+      if (!m_killTimer) {
+        m_killTimer = new QTimer(this);
+        m_killTimer->setSingleShot(true);
+        connect(m_killTimer, &QTimer::timeout, this, [this]() {
+          if (m_killPid > 0) {
+            qDebug() << "MonitorBridge: SIGTERM timeout, sending SIGKILL to"
+                     << m_killPid;
+            m_monitor->killProcess(m_killPid, false);
+            m_killPid = -1;
+          }
+        });
+      }
+      m_killTimer->start(5000);
+    }
+    return ok;
+  }
+
+  return m_monitor->killProcess(pid, false);
+}
+
+void MonitorBridge::forceKillProcess(int pid) {
+  if (m_killTimer)
+    m_killTimer->stop();
+  m_killPid = -1;
+  if (m_monitor)
+    m_monitor->killProcess(pid, false);
 }
