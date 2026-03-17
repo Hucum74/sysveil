@@ -9,6 +9,7 @@
 #include "DiskHistoryModel.h"
 #include "MemoryHistoryModel.h"
 #include "NetworkHistoryModel.h"
+#include "ProcessModel.h"
 #include "SystemMonitor.h"
 
 class MonitorBridge : public QObject {
@@ -34,6 +35,8 @@ class MonitorBridge : public QObject {
   Q_PROPERTY(DiskHistoryModel *diskHistory READ diskHistory CONSTANT)
   Q_PROPERTY(NetworkHistoryModel *networkHistory READ networkHistory CONSTANT)
 
+  // ── Process Model ────────────────────────────────────────────────────
+  Q_PROPERTY(ProcessProxyModel *processModel READ processModel CONSTANT)
 public:
   explicit MonitorBridge(SystemMonitor *monitor, QObject *parent = nullptr);
 
@@ -58,6 +61,7 @@ public:
   MemoryHistoryModel *memoryHistory() { return m_memoryHistory; }
   DiskHistoryModel *diskHistory() { return m_diskHistory; }
   NetworkHistoryModel *networkHistory() { return m_networkHistory; }
+  ProcessProxyModel *processModel() { return m_processProxy; }
 
 signals:
   void cpuChanged();
@@ -71,6 +75,7 @@ private slots:
                     qint64 usedSwap);
   void onDiskData(QVector<DiskStats> disks);
   void onNetworkData(QVector<NetworkInterfaceStats> interfaces);
+  void onProcessData(QVector<ProcessInfo> processes);
 
 private:
   double m_cpuOverall{0.0};
@@ -88,4 +93,6 @@ private:
   MemoryHistoryModel *m_memoryHistory{nullptr};
   DiskHistoryModel *m_diskHistory{nullptr};
   NetworkHistoryModel *m_networkHistory{nullptr};
+  ProcessModel *m_processModel{nullptr};
+  ProcessProxyModel *m_processProxy{nullptr};
 };

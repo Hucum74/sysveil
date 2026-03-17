@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
   ctx->setContextProperty("memoryHistory", bridge.memoryHistory());
   ctx->setContextProperty("diskHistory", bridge.diskHistory());
   ctx->setContextProperty("networkHistory", bridge.networkHistory());
+  ctx->setContextProperty("processModel", bridge.processModel());
 
   // Instantiate Theme from QML and expose as context property
   // so every QML file can use Theme.xxx without any import statement

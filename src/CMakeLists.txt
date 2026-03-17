@@ -2,6 +2,7 @@ qt_add_executable(sysveil
     core/SystemMonitor.cpp
     core/ProcessProvider.h
     qml/MonitorBridge.cpp
+    qml/ProcessModel.cpp
     qml/CpuHistoryModel.cpp
     qml/MemoryHistoryModel.cpp
     qml/DiskHistoryModel.cpp

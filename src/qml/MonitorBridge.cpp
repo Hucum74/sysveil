@@ -6,7 +6,9 @@ MonitorBridge::MonitorBridge(SystemMonitor *monitor, QObject *parent)
     : QObject(parent), m_cpuHistory(new CpuHistoryModel(60, this)),
       m_memoryHistory(new MemoryHistoryModel(60, this)),
       m_diskHistory(new DiskHistoryModel(60, this)),
-      m_networkHistory(new NetworkHistoryModel(60, this)) {
+      m_networkHistory(new NetworkHistoryModel(60, this)),
+      m_processModel(new ProcessModel(this)),
+      m_processProxy(new ProcessProxyModel(this)) {
   Q_ASSERT(monitor);
 
   connect(monitor, &SystemMonitor::cpuDataReady, this,
@@ -17,6 +19,12 @@ MonitorBridge::MonitorBridge(SystemMonitor *monitor, QObject *parent)
           &MonitorBridge::onDiskData);
   connect(monitor, &SystemMonitor::networkDataReady, this,
           &MonitorBridge::onNetworkData);
+
+  m_processProxy->setSourceModel(m_processModel);
+  m_processProxy->setSortRole(ProcessModel::CpuUsageRole);
+
+  connect(monitor, &SystemMonitor::processDataReady, this,
+          &MonitorBridge::onProcessData);
 }
 
 void MonitorBridge::onCpuData(double overall, QVector<double> perCore) {
@@ -106,4 +114,8 @@ void MonitorBridge::onNetworkData(QVector<NetworkInterfaceStats> interfaces) {
   }
 
   emit networkChanged();
+}
+
+void MonitorBridge::onProcessData(QVector<ProcessInfo> processes) {
+  m_processModel->update(std::move(processes));
 }
