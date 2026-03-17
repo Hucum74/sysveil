@@ -63,8 +63,7 @@ void ProcessProxyModel::setFilterText(const QString &text) {
   if (m_filterText == text)
     return;
   m_filterText = text;
-  beginFilterChange();
-  endFilterChange();
+  invalidateFilter(); // deprecated in 6.10 but works on all Qt 6 versions
   emit filterTextChanged();
 }
 
