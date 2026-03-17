@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Release ${{ matrix.os }}
@@ -56,14 +59,14 @@ jobs:
       - name: Package
         run: cmake --build build --config Release --target package
 
+      - name: List build artifacts
+        shell: bash
+        run: find build -maxdepth 2 -name "sysveil-*" | sort
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            build/sysveil-*.tar.gz
-            build/sysveil-*.exe
-            build/sysveil-*.dmg
-            build/sysveil-*.zip
+            build/sysveil-*
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
