@@ -27,6 +27,10 @@ jobs:
           modules: "qtcharts"
           cache: true
 
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y libgl1-mesa-dev libxcb-cursor0
+
       - name: Configure
         run: >
           cmake -B build
@@ -35,11 +39,26 @@ jobs:
       - name: Build
         run: cmake --build build --config Release --parallel
 
+      - name: Deploy Qt (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          windeployqt --qmldir src/qml build/src/Release/sysveil.exe
+
+      - name: Deploy Qt (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          macdeployqt build/src/sysveil.app -qmldir=src/qml
+
+      - name: Package
+        run: cmake --build build --config Release --target package
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: sysveil-${{ matrix.os }}
           path: |
-            build/src/sysveil
-            build/src/Release/sysveil.exe
+            build/sysveil-*.tar.gz
+            build/sysveil-*.exe
+            build/sysveil-*.dmg
           if-no-files-found: ignore

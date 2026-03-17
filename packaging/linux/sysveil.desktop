@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=SysVeil
+Comment=Real-time system resource monitor
+Exec=sysveil
+Icon=sysveil
+Categories=System;Monitor;
+Terminal=false
+StartupNotify=true
