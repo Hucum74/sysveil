@@ -31,6 +31,10 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get install -y libgl1-mesa-dev libxcb-cursor0
 
+      - name: Install NSIS (Windows)
+        if: runner.os == 'Windows'
+        run: choco install nsis --no-progress -y
+
       - name: Configure
         run: >
           cmake -B build
@@ -63,4 +67,5 @@ jobs:
             build/sysveil-*.tar.gz
             build/sysveil-*.exe
             build/sysveil-*.dmg
+            build/sysveil-*.zip
           if-no-files-found: ignore

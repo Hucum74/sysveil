@@ -19,29 +19,32 @@ set(CPACK_RESOURCE_FILE_LICENSE     "${CMAKE_SOURCE_DIR}/LICENSE")
 # ── Platform-specific ─────────────────────────────────────────────────────────
 
 if(WIN32)
-    set(CPACK_GENERATOR "NSIS")
-    set(CPACK_NSIS_DISPLAY_NAME          "SysVeil")
-    set(CPACK_NSIS_PACKAGE_NAME          "SysVeil ${PROJECT_VERSION}")
-    set(CPACK_NSIS_HELP_LINK             "https://github.com/YOUR_USERNAME/sysveil")
-    set(CPACK_NSIS_URL_INFO_ABOUT        "https://github.com/YOUR_USERNAME/sysveil")
-    set(CPACK_NSIS_MODIFY_PATH           OFF)
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-    set(CPACK_NSIS_MUI_FINISHPAGE_RUN    "sysveil.exe")
-    # Create Start Menu and Desktop shortcuts
-    set(CPACK_NSIS_CREATE_ICONS_EXTRA
-        "CreateShortcut '$DESKTOP\\\\SysVeil.lnk' '$INSTDIR\\\\bin\\\\sysveil.exe'")
-    set(CPACK_NSIS_DELETE_ICONS_EXTRA
-        "Delete '$DESKTOP\\\\SysVeil.lnk'")
-
+    # Use NSIS if available, fall back to ZIP
+    find_program(NSIS_MAKE makensis)
+    if(NSIS_MAKE)
+        set(CPACK_GENERATOR "NSIS")
+        set(CPACK_NSIS_DISPLAY_NAME          "SysVeil")
+        set(CPACK_NSIS_PACKAGE_NAME          "SysVeil ${PROJECT_VERSION}")
+        set(CPACK_NSIS_HELP_LINK             "https://github.com/YOUR_USERNAME/sysveil")
+        set(CPACK_NSIS_URL_INFO_ABOUT        "https://github.com/YOUR_USERNAME/sysveil")
+        set(CPACK_NSIS_MODIFY_PATH           OFF)
+        set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+        set(CPACK_NSIS_MUI_FINISHPAGE_RUN    "sysveil.exe")
+        set(CPACK_NSIS_CREATE_ICONS_EXTRA
+            "CreateShortcut '$DESKTOP\\\\SysVeil.lnk' '$INSTDIR\\\\bin\\\\sysveil.exe'")
+        set(CPACK_NSIS_DELETE_ICONS_EXTRA
+            "Delete '$DESKTOP\\\\SysVeil.lnk'")
+    else()
+        message(STATUS "NSIS not found — falling back to ZIP packaging")
+        set(CPACK_GENERATOR "ZIP")
+    endif()
 elseif(APPLE)
     set(CPACK_GENERATOR "DragNDrop")
     set(CPACK_DMG_VOLUME_NAME            "SysVeil ${PROJECT_VERSION}")
     set(CPACK_DMG_FORMAT                 "UDZO")
     set(CPACK_BUNDLE_NAME                "SysVeil")
     set(CPACK_BUNDLE_PLIST               "${CMAKE_SOURCE_DIR}/packaging/macos/Info.plist")
-
 else()
-    # Linux — produce a .tar.gz; AppImage is handled separately in CI
     set(CPACK_GENERATOR "TGZ")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER  "Your Name <you@example.com>")
     set(CPACK_DEBIAN_PACKAGE_SECTION     "utils")
